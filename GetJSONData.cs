@@ -7,6 +7,7 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Azure.Storage.Blobs;
 
 namespace kyungrim.Function
 {
@@ -21,7 +22,23 @@ namespace kyungrim.Function
             dynamic data = JsonConvert.DeserializeObject(requestBody);
             string valueA = data.a;    
 
-            return requestBody;
+            BlobServiceClient clientA = new BlobServiceClient(connStrA);
+            BlobContainerClient containerA = clientA.GetBlobContainerClient("kyungrimcon");
+            BlobClient blobA = containerA.GetBlobClient(valueA + ".json");
+
+            string responseA = "No Data";
+
+            if(blobA.Exists())
+            {
+                using(MemoryStream msA = new MemoryStream())
+                {
+                    blobA.DownloadTo(msA);
+                    responseA = System.Text.Encoding.UTF8.GetString(msA.ToArray());
+                }
+
+            }
+
+            return responseA;
         }
     }
 }
