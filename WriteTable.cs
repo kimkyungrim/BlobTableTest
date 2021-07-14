@@ -40,8 +40,7 @@ namespace kyungrim.Function
             TableOperation operA = TableOperation.InsertOrReplace(memoA);
             tableA.Execute(operA);
         }
-
-        private class MemoData: TableEntity
+        private class MemoData : TableEntity
         {
             public string content { get; set; }
         }
