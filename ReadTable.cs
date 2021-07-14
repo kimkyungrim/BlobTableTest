@@ -10,7 +10,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Microsoft.Azure.Cosmos.Table;
 
-namespace kyungrim.Function
+namespace MinGyu.Function
 {
     public static class ReadTable
     {
@@ -23,7 +23,6 @@ namespace kyungrim.Function
             dynamic data = JsonConvert.DeserializeObject(requestBody);
             string PartitionKeyA = data.PartitionKey;
             string RowKeyA = data.RowKey;
-            string contentA = data.Content;
 
             CloudStorageAccount stoA = CloudStorageAccount.Parse(connStrA);
             CloudTableClient tbC = stoA.CreateCloudTableClient();
@@ -35,14 +34,14 @@ namespace kyungrim.Function
             Task<string> response = ReadToTable(tableA, filterA, filterB);
             return response;
         }
+
         static async Task<string> ReadToTable(CloudTable tableA, string filterA, string filterB)
         {
-
             TableQuery<MemoData> rangeQ = new TableQuery<MemoData>().Where(
                 TableQuery.CombineFilters(filterA, TableOperators.And, filterB)
             );
             TableContinuationToken tokenA = null;
-            rangeQ.TakeCount = 10000;
+            rangeQ.TakeCount = 1000;
             JArray resultArr = new JArray();
             try
             {
@@ -56,8 +55,7 @@ namespace kyungrim.Function
                         //srcObj.Remove("Timestamp");
                         resultArr.Add(srcObj);
                     }
-
-                }while (tokenA != null);     
+                } while (tokenA != null);
             }
             catch (StorageException e)
             {
@@ -66,9 +64,10 @@ namespace kyungrim.Function
             }
 
             string resultA = Newtonsoft.Json.JsonConvert.SerializeObject(resultArr);
-            if(resultA != null) return resultA;
+            if (resultA != null) return resultA;
             else return "No Data";
         }
+
         private class MemoData : TableEntity
         {
             public string content { get; set; }
